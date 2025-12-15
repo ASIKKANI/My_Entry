@@ -1,0 +1,113 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    :root {
+        --background: 30 10% 90%;
+        /* Darker Warm Paper */
+        --foreground: 24 10% 10%;
+
+        --card: 0 0% 100%;
+        --card-foreground: 24 10% 10%;
+
+        --popover: 0 0% 100%;
+        --popover-foreground: 24 10% 10%;
+
+        --primary: 24 10% 10%;
+        /* Ink Black for high contrast editorial feel */
+        --primary-foreground: 30 20% 98%;
+
+        --secondary: 30 20% 96%;
+        --secondary-foreground: 24 10% 10%;
+
+        --muted: 30 20% 96%;
+        --muted-foreground: 24 5% 45%;
+
+        --accent: 265 40% 50%;
+        /* Deep Purple as refined accent */
+        --accent-foreground: 30 20% 98%;
+
+        --destructive: 0 84.2% 60.2%;
+        --destructive-foreground: 210 40% 98%;
+
+        --border: 30 10% 90%;
+        --input: 30 10% 90%;
+        --ring: 24 10% 10%;
+
+        --radius: 0.5rem;
+    }
+
+    .dark {
+        /* Dark mode omitted for now to focus on the requested "Warm/Paper" aesthetic, but structure remains */
+        --background: 222.2 84% 4.9%;
+        --foreground: 210 40% 98%;
+    }
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+
+    body {
+        @apply bg-background text-foreground font-sans antialiased;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+    }
+
+    /* Smooth scrolling */
+    html {
+        scroll-behavior: smooth;
+    }
+
+    /* React Quill Overrides */
+    .ql-container {
+        font-family: 'Inter', sans-serif !important;
+        font-size: 1.125rem !important;
+    }
+
+    .ql-editor {
+        padding: 0 !important;
+        min-height: 50vh;
+        line-height: 1.8 !important;
+    }
+
+    .ql-editor.ql-blank::before {
+        color: hsl(var(--primary) / 0.3) !important;
+        font-style: italic;
+        left: 0 !important;
+    }
+}
+
+.masonry-grid {
+    display: flex;
+    margin-left: -1.5rem;
+    /* gutter size offset */
+    width: auto;
+}
+
+.masonry-grid_column {
+    padding-left: 1.5rem;
+    /* gutter size */
+    background-clip: padding-box;
+}
+
+/* Custom Scrollbar for a cleaner feel */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
+}
