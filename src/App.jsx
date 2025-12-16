@@ -15,7 +15,7 @@ function App() {
     // Tracks which entry is being edited; null for new entry.
     const [activeEntry, setActiveEntry] = useState(null)
 
-    const { entries, addEntry, updateEntry, deleteEntry, togglePin } = useJournal()
+    const { entries, addEntry, updateEntry, deleteEntry, togglePin, toggleLock } = useJournal()
 
     const handleCreateNew = () => {
         setActiveEntry(null)
@@ -93,6 +93,7 @@ function App() {
                             onEdit={handleEdit}
                             onDelete={deleteEntry}
                             onPin={togglePin}
+                            toggleLock={toggleLock}
                             onBack={() => setView("landing")}
                         />
                     </motion.div>
@@ -131,7 +132,10 @@ function App() {
                 )}
             </AnimatePresence>
 
-            <div className="fixed bottom-4 right-6 z-[9999] pointer-events-none text-muted-foreground/80">
+            <div className="fixed bottom-4 right-6 z-[9999] pointer-events-none text-muted-foreground/80 text-right">
+                <p className="font-sans text-[10px] tracking-widest uppercase opacity-60 mb-1">
+                    ver 1.1.0
+                </p>
                 <p className="font-serif italic text-sm tracking-wide drop-shadow-sm">
                     Designed by Ashik
                 </p>

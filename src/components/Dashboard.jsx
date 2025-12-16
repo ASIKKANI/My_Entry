@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/Button"
-import { Card } from "@/components/ui/Card"
-import { Plus, Clock, Trash2, ArrowLeft, MoreHorizontal, Palette, Pin } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { Plus, Trash2, Palette, Pin, Lock, Unlock } from "lucide-react"
+import { cn, isColorDark } from "@/lib/utils"
+import { useUser } from "@/hooks/useUser"
+import { Locker } from "@/components/Locker"
 
 // Reuse MOODS constant or define local (better shared, but defining local for now to keep simple)
 const BG_OPTIONS = [
@@ -14,10 +15,14 @@ const BG_OPTIONS = [
     { id: "nature", label: "Nature", color: "bg-[#C8E6C9]" },
 ]
 
-export function Dashboard({ userName, entries, onCreate, onEdit, onDelete, onPin, onBack }) {
+export function Dashboard({ userName, entries, onCreate, onEdit, onDelete, onPin, onBack, toggleLock }) {
     const [bgColor, setBgColor] = useState(() => localStorage.getItem("mindful_dashboard_bg") || "")
     const [customBg, setCustomBg] = useState(() => localStorage.getItem("mindful_dashboard_custom_bg") || "")
     const [isPaletteOpen, setIsPaletteOpen] = useState(false)
+    const [isLockerOpen, setIsLockerOpen] = useState(false)
+
+    // User hooks for Locker
+    const userHooks = useUser()
 
     useEffect(() => {
         localStorage.setItem("mindful_dashboard_bg", bgColor)
@@ -39,6 +44,9 @@ export function Dashboard({ userName, entries, onCreate, onEdit, onDelete, onPin
     const activeBgClass = BG_OPTIONS.find(b => b.id === bgColor)?.color || ""
     const activeStyle = bgColor === "custom" && customBg ? { backgroundColor: customBg } : {}
 
+    // Determine if we are in "dark mode" based on the background
+    const isDark = bgColor === "custom" && customBg ? isColorDark(customBg) : false
+
     const formatDate = (isoString) => {
         return new Date(isoString).toLocaleDateString('en-US', {
             month: 'long',
@@ -47,32 +55,67 @@ export function Dashboard({ userName, entries, onCreate, onEdit, onDelete, onPin
     }
 
     const getMoodStyle = (moodId) => {
-        // ... existing getMoodStyle logic kept simple or reused if needed
         switch (moodId) {
             case "calm": return "bg-[#E3F2FD]";
             case "joy": return "bg-[#FFF3E0]";
             case "focus": return "bg-[#F3E5F5]"
             case "nature": return "bg-[#E8F5E9]";
-            default: return "bg-white";
+            default: return "";
         }
     }
 
+    // Helper to determine text color for a card
+    const getCardTextColor = (entry) => {
+        if (entry.customColor) {
+            // Force white text if dark, black if light
+            return isColorDark(entry.customColor) ? "text-white" : "text-black"
+        }
+        if (entry.mood && entry.mood !== "default") {
+            // All predefined moods are pastel/light, so text should be black
+            return "text-black"
+        }
+        // Default card: Uses theme content colors.
+        // In dark mode app, text is white. In light mode, black.
+        // We let the parent "dark" class handle this, or force card foreground.
+        return "text-card-foreground"
+    }
+
+    // Filter out locked entries
+    const visibleEntries = entries.filter(e => !e.locked)
+
     return (
         <motion.div
-            className={cn("min-h-screen p-6 md:p-12 transition-colors duration-500", activeBgClass)}
+            className={cn(
+                "min-h-screen p-6 md:p-12 transition-colors duration-500",
+                activeBgClass,
+                isDark && "dark" // Apply dark class to switch text colors
+            )}
             style={activeStyle}
         >
-            <header className="flex items-end justify-between mb-16 border-b border-black/5 pb-6 relative z-10">
+            <header className="flex flex-col md:flex-row md:items-end justify-between mb-16 border-b border-black/5 dark:border-white/10 pb-6 relative z-10 gap-6 md:gap-0">
                 <div>
-                    <h2 className="text-5xl md:text-6xl font-serif font-medium text-primary mb-2">
-                        {userName ? `${userName}'s Entry` : "My Entry"}
+                    <h2 className="text-5xl md:text-6xl font-serif font-medium text-primary mb-2 dark:text-white transition-colors">
+                        {userName ? `${userName}'s Journal` : "Blue Paper"}
                     </h2>
-                    <p className="text-muted-foreground font-sans text-lg">
-                        {entries.length} {entries.length === 1 ? 'entry' : 'entries'} written
+                    <p className="text-muted-foreground font-sans text-lg dark:text-white/60 transition-colors">
+                        {visibleEntries.length} {visibleEntries.length === 1 ? 'entry' : 'entries'} written
                     </p>
                 </div>
 
                 <div className="flex items-center gap-4">
+                    {/* Locker Toggle */}
+                    <div className="relative">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setIsLockerOpen(true)}
+                            className="rounded-full w-12 h-12 shadow-sm bg-white/50 hover:bg-white/80 backdrop-blur-md transition-all hover:scale-105"
+                            title="Notes Locker"
+                        >
+                            <Lock className="h-5 w-5 text-primary/80" />
+                        </Button>
+                    </div>
+
                     {/* Dashboard Palette Toggle */}
                     <div className="relative">
                         <Button
@@ -88,34 +131,45 @@ export function Dashboard({ userName, entries, onCreate, onEdit, onDelete, onPin
                         <AnimatePresence>
                             {isPaletteOpen && (
                                 <motion.div
-                                    initial={{ opacity: 0, scale: 0.9, y: 10, x: -50 }}
-                                    animate={{ opacity: 1, scale: 1, y: 20, x: -100 }}
-                                    exit={{ opacity: 0, scale: 0.9, y: 10 }}
-                                    className="absolute top-full right-0 mt-2 flex items-center gap-3 bg-white/90 backdrop-blur-xl p-4 rounded-3xl shadow-2xl border border-white/50 min-w-max z-50 origin-top-right"
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.95 }}
+                                    className="fixed inset-0 z-[100] flex items-center justify-center bg-black/20 backdrop-blur-sm md:absolute md:inset-auto md:top-full md:right-0 md:left-auto md:mt-2 md:block md:bg-white/90 md:backdrop-blur-xl md:p-4 md:rounded-3xl md:shadow-2xl md:border md:border-white/50 md:min-w-max md:origin-top-right"
+                                    onClick={(e) => {
+                                        if (window.innerWidth < 768 && e.target === e.currentTarget) {
+                                            setIsPaletteOpen(false);
+                                        }
+                                    }}
                                 >
-                                    {BG_OPTIONS.map((opt) => (
-                                        <button
-                                            key={opt.id}
-                                            onClick={() => handleSelectBg(opt.id)}
-                                            className={cn(
-                                                "w-8 h-8 rounded-full transition-all duration-300 hover:scale-110 focus:outline-none ring-2 ring-offset-1 ring-offset-transparent shadow-sm border border-black/10",
-                                                opt.color || "bg-white",
-                                                bgColor === opt.id ? "ring-black/40 scale-125 shadow-md" : "ring-transparent opacity-80 hover:opacity-100"
-                                            )}
-                                            title={opt.label}
-                                        />
-                                    ))}
+                                    <div className="bg-white/95 backdrop-blur-xl p-6 rounded-[2rem] shadow-2xl border border-white/50 flex flex-wrap justify-center items-center gap-3 w-[85vw] max-w-sm md:w-auto md:max-w-none md:p-0 md:bg-transparent md:shadow-none md:border-none relative">
 
-                                    <div className="w-px h-6 bg-black/10 mx-1"></div>
+                                        {/* Close button for mobile within the modal if needed, but clicking outside works */}
 
-                                    <div className="relative group w-8 h-8">
-                                        <div className="w-full h-full rounded-full overflow-hidden ring-2 ring-offset-1 ring-transparent hover:scale-110 transition-transform shadow-sm border border-black/10 bg-gradient-to-tr from-blue-400 via-purple-400 to-orange-400 cursor-pointer">
-                                            <input
-                                                type="color"
-                                                onChange={handleCustomBgChange}
-                                                className="opacity-0 w-full h-full cursor-pointer absolute inset-0"
-                                                title="Pick custom page background"
+                                        {BG_OPTIONS.map((opt) => (
+                                            <button
+                                                key={opt.id}
+                                                onClick={() => handleSelectBg(opt.id)}
+                                                className={cn(
+                                                    "w-10 h-10 md:w-8 md:h-8 rounded-full transition-all duration-300 hover:scale-110 focus:outline-none ring-2 ring-offset-1 ring-offset-transparent shadow-sm border border-black/10",
+                                                    opt.color || "bg-white",
+                                                    bgColor === opt.id ? "ring-black/40 scale-125 shadow-md" : "ring-transparent opacity-80 hover:opacity-100"
+                                                )}
+                                                title={opt.label}
                                             />
+                                        ))}
+
+                                        <div className="w-px h-6 bg-black/10 mx-1"></div>
+
+                                        <div className="relative group w-10 h-10 md:w-8 md:h-8">
+                                            <div className="w-full h-full rounded-full overflow-hidden ring-2 ring-offset-1 ring-transparent hover:scale-110 transition-transform shadow-sm border border-black/10 bg-gradient-to-tr from-blue-400 via-purple-400 to-orange-400 cursor-pointer">
+                                                <input
+                                                    type="color"
+                                                    value={customBg || "#ffffff"}
+                                                    onChange={handleCustomBgChange}
+                                                    className="opacity-0 w-full h-full cursor-pointer absolute inset-0 z-50"
+                                                    title="Pick custom page background"
+                                                />
+                                            </div>
                                         </div>
                                     </div>
                                 </motion.div>
@@ -130,16 +184,18 @@ export function Dashboard({ userName, entries, onCreate, onEdit, onDelete, onPin
                 </div>
             </header>
 
-            {entries.length === 0 ? (
+            {visibleEntries.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-32 text-center opacity-60">
-                    <h3 className="font-serif text-3xl mb-4 italic text-muted-foreground">The page is blank...</h3>
+                    <h3 className="font-serif text-3xl mb-4 italic text-muted-foreground">
+                        {entries.length > 0 ? "All entries are in the Locker." : "The page is blank..."}
+                    </h3>
                     <p className="font-sans text-lg text-muted-foreground/80 max-w-md">
-                        But your mind isn't. Begin your first entry today.
+                        {entries.length > 0 ? "Unlock them to view." : "But your mind isn't. Begin your first entry today."}
                     </p>
                 </div>
             ) : (
                 <div className="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6">
-                    {entries.map((entry, index) => (
+                    {visibleEntries.map((entry, index) => (
                         <motion.div
                             key={entry.id}
                             initial={{ opacity: 0, y: 20 }}
@@ -151,8 +207,15 @@ export function Dashboard({ userName, entries, onCreate, onEdit, onDelete, onPin
                             <div
                                 style={entry.customColor ? { backgroundColor: entry.customColor } : {}}
                                 className={cn(
-                                    "p-8 rounded-2xl transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 border border-transparent hover:border-border/50",
+                                    "p-8 rounded-2xl transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 border border-transparent hover:border-border/50 break-words",
                                     !entry.customColor && getMoodStyle(entry.mood),
+
+                                    // Default Card Styling (No mood/custom)
+                                    (!entry.customColor && !getMoodStyle(entry.mood)) && "bg-card shadow-sm border-black/5 dark:border-white/5",
+
+                                    // Text Color Logic
+                                    getCardTextColor(entry),
+
                                     entry.pinned && "ring-2 ring-primary/20 shadow-lg scale-[1.02]"
                                 )}>
                                 <div className="flex justify-between items-start mb-6">
@@ -160,12 +223,20 @@ export function Dashboard({ userName, entries, onCreate, onEdit, onDelete, onPin
                                         {formatDate(entry.createdAt)}
                                         {entry.pinned && <Pin className="w-3 h-3 fill-current" />}
                                     </span>
+                                    {/* Action Buttons: Visible by default on mobile, opacity on hover for desktop */}
                                     <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); toggleLock(entry.id); }}
+                                            className="p-2 hover:bg-black/5 rounded-full transition-all md:opacity-0 md:group-hover:opacity-100"
+                                            title="Lock entry"
+                                        >
+                                            <Lock className="h-4 w-4 opacity-50 hover:opacity-100" />
+                                        </button>
                                         <button
                                             onClick={(e) => { e.stopPropagation(); onPin(entry.id); }}
                                             className={cn(
-                                                "p-2 rounded-full transition-all",
-                                                entry.pinned ? "opacity-100 bg-black/5" : "opacity-0 group-hover:opacity-100 hover:bg-black/5"
+                                                "p-2 rounded-full transition-all md:opacity-0 md:group-hover:opacity-100",
+                                                entry.pinned ? "opacity-100 bg-black/5" : "hover:bg-black/5"
                                             )}
                                             title={entry.pinned ? "Unpin entry" : "Pin entry"}
                                         >
@@ -173,19 +244,19 @@ export function Dashboard({ userName, entries, onCreate, onEdit, onDelete, onPin
                                         </button>
                                         <button
                                             onClick={(e) => { e.stopPropagation(); onDelete(entry.id); }}
-                                            className="opacity-0 group-hover:opacity-100 p-2 hover:bg-black/5 rounded-full transition-all"
+                                            className="p-2 hover:bg-black/5 rounded-full transition-all md:opacity-0 md:group-hover:opacity-100"
                                             title="Delete entry"
                                         >
-                                            <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
+                                            <Trash2 className="h-4 w-4 opacity-50 hover:opacity-100 hover:text-destructive" />
                                         </button>
                                     </div>
                                 </div>
 
-                                <h3 className="font-serif text-2xl md:text-3xl font-medium mb-4 text-primary leading-tight">
+                                <h3 className="font-serif text-2xl md:text-3xl font-medium mb-4 text-inherit leading-tight break-words">
                                     {entry.title || <span className="opacity-30 italic">Untitled</span>}
                                 </h3>
 
-                                <p className="font-sans text-base text-muted-foreground line-clamp-[8] leading-relaxed opacity-90">
+                                <p className="font-sans text-base opacity-90 line-clamp-[8] leading-relaxed text-inherit break-words">
                                     {entry.content.replace(/<[^>]+>/g, '')}
                                 </p>
                             </div>
@@ -193,6 +264,22 @@ export function Dashboard({ userName, entries, onCreate, onEdit, onDelete, onPin
                     ))}
                 </div>
             )}
+
+            <AnimatePresence>
+                {isLockerOpen && (
+                    <Locker
+                        isOpen={isLockerOpen}
+                        onClose={() => setIsLockerOpen(false)}
+                        entries={entries}
+                        toggleLock={toggleLock}
+                        userHooks={userHooks}
+                        onEdit={(entry) => {
+                            setIsLockerOpen(false)
+                            onEdit(entry)
+                        }}
+                    />
+                )}
+            </AnimatePresence>
         </motion.div>
     )
 }

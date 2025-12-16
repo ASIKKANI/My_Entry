@@ -11,7 +11,13 @@ export function useJournal() {
     }, [entries])
 
     const addEntry = (entry) => {
-        const newEntry = { ...entry, id: Date.now().toString(), createdAt: new Date().toISOString() }
+        const newEntry = {
+            ...entry,
+            id: Date.now().toString(),
+            createdAt: new Date().toISOString(),
+            pinned: false,
+            locked: false // Default to unlocked
+        }
         setEntries(prev => [newEntry, ...prev])
         return newEntry
     }
@@ -26,6 +32,12 @@ export function useJournal() {
         ))
     }
 
+    const toggleLock = (id) => {
+        setEntries(prev => prev.map(entry =>
+            entry.id === id ? { ...entry, locked: !entry.locked } : entry
+        ))
+    }
+
     const deleteEntry = (id) => {
         setEntries(prev => prev.filter(entry => entry.id !== id))
     }
@@ -37,5 +49,5 @@ export function useJournal() {
         return new Date(b.createdAt) - new Date(a.createdAt)
     })
 
-    return { entries: sortedEntries, addEntry, updateEntry, deleteEntry, togglePin }
+    return { entries: sortedEntries, addEntry, updateEntry, deleteEntry, togglePin, toggleLock }
 }

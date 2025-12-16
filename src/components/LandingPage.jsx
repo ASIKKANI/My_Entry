@@ -34,19 +34,19 @@ export function LandingPage({ onStart }) {
                 className="space-y-10 z-10"
             >
                 <div className="relative inline-block">
-                    <h1 className="font-serif text-6xl md:text-8xl lg:text-9xl font-medium tracking-tight text-primary leading-[1.1]">
-                        My<br />Entry
+                    <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl font-medium tracking-tight text-primary leading-[1.1]">
+                        Blue Paper<br />and White Ink
                     </h1>
                     <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: "100%" }}
                         transition={{ delay: 1, duration: 1.5, ease: "easeInOut" }}
-                        className="h-1 bg-accent absolute bottom-2 left-0"
+                        className="h-1.5 bg-accent/80 absolute -bottom-4 left-0 rounded-full"
                     />
                 </div>
 
-                <p className="font-sans text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed tracking-wide font-light">
-                    A sanctuary for your thoughts. Designed for <span className="text-foreground font-medium">clarity</span>, built for <span className="text-foreground font-medium">reflection</span>.
+                <p className="font-sans text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed tracking-wide font-light lowercase">
+                    pixels of art and verses of consciousness
                 </p>
 
                 <div className="pt-12">
