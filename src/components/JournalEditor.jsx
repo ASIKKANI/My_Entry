@@ -7,6 +7,14 @@ import ReactQuill, { Quill } from "react-quill"
 import "react-quill/dist/quill.snow.css" // Toolbar theme
 
 // --- FONT CONFIGURATION ---
+const FONT_SIZES = [
+    { name: "small", label: "Small", css: "0.85em" },
+    { name: "normal", label: "Normal", css: "1em" },
+    { name: "medium", label: "Medium", css: "1.25em" },
+    { name: "large", label: "Large", css: "1.5em" },
+    { name: "huge", label: "Huge", css: "2.5em" },
+]
+
 const FONTS = [
     // Standard
     { name: "sans", label: "Inter", family: "'Inter', sans-serif" },
@@ -35,10 +43,14 @@ const FONTS = [
     { name: "tangerine", label: "Tangerine", family: "'Tangerine', cursive" },
 ]
 
-// Register Whitelist
+// Register Whitelists
 const Font = Quill.import("formats/font")
 Font.whitelist = FONTS.map(f => f.name)
 Quill.register(Font, true)
+
+const Size = Quill.import("formats/size")
+Size.whitelist = FONT_SIZES.map(s => s.name)
+Quill.register(Size, true)
 
 const MOODS = [
     { id: "calm", label: "Calm", color: "bg-[#BBDEFB]", hex: "#BBDEFB" },
@@ -52,6 +64,7 @@ const CustomToolbar = ({ isDark, onAutoClose, quillRef, titleFont, setTitleFont,
     const toolbarRef = useRef(null)
     const [currentFormat, setCurrentFormat] = useState({})
     const [isFontMenuOpen, setIsFontMenuOpen] = useState(false)
+    const [isSizeMenuOpen, setIsSizeMenuOpen] = useState(false)
 
     // Sync state with cursor
     useEffect(() => {
@@ -128,6 +141,17 @@ const CustomToolbar = ({ isDark, onAutoClose, quillRef, titleFont, setTitleFont,
         }
     }
 
+    const handleSizeSelect = (sizeName) => {
+        if (activeContext === 'title') return;
+        if (quillRef.current) {
+            const quill = quillRef.current.getEditor();
+            quill.focus();
+            quill.format('size', sizeName);
+            setIsSizeMenuOpen(false);
+            setTimeout(onAutoClose, 50);
+        }
+    }
+
     const isActive = (format, value) => {
         if (activeContext === 'title') return false;
         if (value === true) return !!currentFormat[format]
@@ -141,6 +165,10 @@ const CustomToolbar = ({ isDark, onAutoClose, quillRef, titleFont, setTitleFont,
         : (currentFormat.font || 'sans');
 
     const currentFontObj = FONTS.find(f => f.name === effectiveFontName) || FONTS[0]
+
+    // Determine current size
+    const currentSizeName = currentFormat.size || 'normal';
+    const currentSizeObj = FONT_SIZES.find(s => s.name === currentSizeName) || FONT_SIZES.find(s => s.name === 'normal');
 
     return (
         <div
@@ -165,46 +193,89 @@ const CustomToolbar = ({ isDark, onAutoClose, quillRef, titleFont, setTitleFont,
             <div className="flex flex-col gap-2 shrink-0 relative">
                 <label className="text-[10px] uppercase tracking-wider opacity-50 font-sans">Typography</label>
 
-                <button
-                    onClick={() => setIsFontMenuOpen(!isFontMenuOpen)}
-                    className="w-full h-12 flex items-center justify-between bg-current/5 border border-current/10 rounded-xl px-4 hover:bg-current/10 transition-colors"
-                >
-                    <span
-                        className="text-lg truncate mr-2"
-                        style={{ fontFamily: currentFontObj.family }}
-                    >
-                        {currentFontObj.label}
-                    </span>
-                    <ChevronDown size={16} className={cn("transition-transform opacity-50", isFontMenuOpen ? "rotate-180" : "")} />
-                </button>
-
-                {/* Dropdown List */}
-                <AnimatePresence>
-                    {isFontMenuOpen && (
-                        <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-xl shadow-xl overflow-hidden z-50 flex flex-col max-h-[300px] overflow-y-auto bg-white dark:bg-black"
+                <div className="flex gap-2">
+                    {/* Font Family Dropdown */}
+                    <div className="relative flex-1">
+                        <button
+                            onClick={() => { setIsFontMenuOpen(!isFontMenuOpen); setIsSizeMenuOpen(false); }}
+                            className="w-full h-12 flex items-center justify-between bg-current/5 border border-current/10 rounded-xl px-4 hover:bg-current/10 transition-colors"
                         >
-                            {FONTS.map(font => (
-                                <button
-                                    key={font.name}
-                                    onClick={() => handleFontSelect(font.name)}
-                                    className={cn(
-                                        "px-4 py-3 text-left hover:bg-primary/5 transition-colors flex items-center justify-between group",
-                                        effectiveFontName === font.name ? "bg-primary/5 text-primary" : ""
-                                    )}
+                            <span
+                                className="text-lg truncate mr-2"
+                                style={{ fontFamily: currentFontObj.family }}
+                            >
+                                {currentFontObj.label}
+                            </span>
+                            <ChevronDown size={16} className={cn("transition-transform opacity-50", isFontMenuOpen ? "rotate-180" : "")} />
+                        </button>
+
+                        {/* Dropdown List */}
+                        <AnimatePresence>
+                            {isFontMenuOpen && (
+                                <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-xl shadow-xl overflow-hidden z-50 flex flex-col max-h-[300px] overflow-y-auto bg-white dark:bg-black"
                                 >
-                                    <span className="text-xl" style={{ fontFamily: font.family }}>
-                                        {font.label}
-                                    </span>
-                                    {effectiveFontName === font.name && <Check size={14} />}
-                                </button>
-                            ))}
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                                    {FONTS.map(font => (
+                                        <button
+                                            key={font.name}
+                                            onClick={() => handleFontSelect(font.name)}
+                                            className={cn(
+                                                "px-4 py-3 text-left hover:bg-primary/5 transition-colors flex items-center justify-between group",
+                                                effectiveFontName === font.name ? "bg-primary/5 text-primary" : ""
+                                            )}
+                                        >
+                                            <span className="text-xl" style={{ fontFamily: font.family }}>
+                                                {font.label}
+                                            </span>
+                                            {effectiveFontName === font.name && <Check size={14} />}
+                                        </button>
+                                    ))}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+
+                    {/* Font Size Dropdown (Disabled for Title) */}
+                    <div className={cn("relative w-24 transition-opacity", activeContext === 'title' && "opacity-30 pointer-events-none")}>
+                        <button
+                            onClick={() => { setIsSizeMenuOpen(!isSizeMenuOpen); setIsFontMenuOpen(false); }}
+                            className="w-full h-12 flex items-center justify-between bg-current/5 border border-current/10 rounded-xl px-3 hover:bg-current/10 transition-colors"
+                        >
+                            <span className="text-sm font-medium">
+                                {currentSizeObj?.label || "Size"}
+                            </span>
+                            <ChevronDown size={14} className={cn("transition-transform opacity-50", isSizeMenuOpen ? "rotate-180" : "")} />
+                        </button>
+
+                        <AnimatePresence>
+                            {isSizeMenuOpen && (
+                                <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    className="absolute top-full right-0 mt-2 w-32 bg-card border border-border rounded-xl shadow-xl overflow-hidden z-50 flex flex-col bg-white dark:bg-black"
+                                >
+                                    {FONT_SIZES.map(size => (
+                                        <button
+                                            key={size.name}
+                                            onClick={() => handleSizeSelect(size.name)}
+                                            className={cn(
+                                                "px-4 py-2 text-left hover:bg-primary/5 transition-colors flex items-center justify-between",
+                                                currentSizeName === size.name ? "bg-primary/5 text-primary" : ""
+                                            )}
+                                        >
+                                            <span className="text-sm">{size.label}</span>
+                                            {currentSizeName === size.name && <Check size={12} />}
+                                        </button>
+                                    ))}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+                </div>
             </div>
 
             {/* Standard Tools (Disabled if Title) */}
@@ -348,7 +419,7 @@ export function JournalEditor({ entry, onBack, onSave }) {
     }), [])
 
     const formats = useMemo(() => [
-        'font',
+        'font', 'size',
         'header',
         'bold', 'italic', 'underline', 'strike',
         'list', 'bullet',
@@ -444,7 +515,7 @@ export function JournalEditor({ entry, onBack, onSave }) {
                             }}
                             className={cn(
                                 "rounded-full w-10 h-10 transition-all hover:scale-105",
-                                isToolbarOpen ? "bg-white/30 shadow-inner" : ""
+                                "bg-white/30 shadow-inner"
                             )}
                         >
                             <Type className={cn("h-5 w-5", isDark ? "text-white" : "text-black")} />
@@ -537,6 +608,13 @@ export function JournalEditor({ entry, onBack, onSave }) {
                                 font-family: ${f.family} !important; 
                                 ${f.name === 'pixel' ? 'font-size: 0.8em;' : ''}
                                 ${f.name === 'vibes' || f.name === 'pinyon' ? 'font-size: 1.4em; line-height: 1.6;' : ''}
+                            }
+                        `).join('')}
+
+                        /* Font Size Mappings */
+                        ${FONT_SIZES.map(s => `
+                            .ql-size-${s.name} {
+                                font-size: ${s.css} !important;
                             }
                         `).join('')}
                     `}</style>
