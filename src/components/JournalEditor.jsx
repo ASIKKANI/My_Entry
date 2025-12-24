@@ -347,14 +347,14 @@ export function JournalEditor({ entry, onBack, onSave }) {
         keyboard: { bindings: {} }
     }), [])
 
-    const formats = [
+    const formats = useMemo(() => [
         'font',
         'header',
         'bold', 'italic', 'underline', 'strike',
         'list', 'bullet',
         'blockquote',
         'clean'
-    ]
+    ], [])
 
     // Get font family prop for Title Input
     const titleFontFamily = FONTS.find(f => f.name === titleFont)?.family || "'Playfair Display', serif"

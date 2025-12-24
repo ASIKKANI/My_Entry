@@ -134,7 +134,7 @@ function App() {
 
             <div className="fixed bottom-4 right-6 z-[9999] pointer-events-none text-muted-foreground/80 text-right">
                 <p className="font-sans text-[10px] tracking-widest uppercase opacity-60 mb-1">
-                    ver 1.1.0
+                    ver 1.1.1
                 </p>
                 <p className="font-serif italic text-sm tracking-wide drop-shadow-sm">
                     Designed by Ashik
