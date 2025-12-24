@@ -146,7 +146,11 @@ const CustomToolbar = ({ isDark, onAutoClose, quillRef, titleFont, setTitleFont,
         if (quillRef.current) {
             const quill = quillRef.current.getEditor();
             quill.focus();
-            quill.format('size', sizeName);
+            if (sizeName === 'normal') {
+                quill.format('size', false); // Clear size format to revert to default
+            } else {
+                quill.format('size', sizeName);
+            }
             setIsSizeMenuOpen(false);
             setTimeout(onAutoClose, 50);
         }
