@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from "framer-motion"
+import { SpeedInsights } from '@vercel/speed-insights/react'
 import { LandingPage } from "@/components/LandingPage"
 import { JournalEditor } from "@/components/JournalEditor"
 import { MediaGallery } from "@/components/MediaGallery"
@@ -140,6 +141,8 @@ function App() {
                     Designed by Ashik
                 </p>
             </div>
+
+            <SpeedInsights />
         </div>
     )
 }
