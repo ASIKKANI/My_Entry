@@ -8,7 +8,7 @@ Welcome to **Blue Paper and White Ink**, a sanctuary for your thoughts designed 
 We built this because most writing apps feel cold and utilitarian. Blue Paper and White Ink is different.
 
 - **Aesthetic First**: The interface is minimal, calm, and beautiful. From the animated entrance to the paper-like layouts, every pixel is crafted to help you focus.
-- **Your Style, Your Font**: Why should your journal look like everyone else's?
+- **Your Style, Your Font**: Why should your journal look like everyone else's? 
     - **Title Styling**: Give your headlines a unique personality with distinct fonts.
     - **Body Typography**: Choose from over 15+ premium fonts, including elegant scripts like *Pinyon Script*, classics like *Cinzel*, or clean modern sans-serifs. The font picker even previews the text *in* the font, so you know exactly what you're getting.
 - **Smart Writing Tools**: The editing toolbar stays out of your way. It auto-hides when you're writing and pops up only when you need it. It's smart enough to know if you're editing a Title or a Paragraph and offers you the right tools for the job.
