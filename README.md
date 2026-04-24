@@ -13,7 +13,7 @@ We built this because most writing apps feel cold and utilitarian. Blue Paper an
     - **Body Typography**: Choose from over 15+ premium fonts, including elegant scripts like *Pinyon Script*, classics like *Cinzel*, or clean modern sans-serifs. The font picker even previews the text *in* the font, so you know exactly what you're getting.
 - **Smart Writing Tools**: The editing toolbar stays out of your way. It auto-hides when you're writing and pops up only when you need it. It's smart enough to know if you're editing a Title or a Paragraph and offers you the right tools for the job.
 
-## 🔒 Privacy & Peace of Mind
+## 🔒 Privacy & Peace of Mind 
 
 - **The Locker**: Some thoughts are just for you. We've built a secure **Notes Locker** where you can password-protect specific entries. They vanish from the main dashboard and stay safely encrypted behind your seamless "Change Password" flow.
 - **Moods & Themes**: Set the vibe for each entry. Feeling *Calm*? The page turns a soft blue. *Joy*? A warm amber. Or pick your own custom color to match the emotion of the moment.
